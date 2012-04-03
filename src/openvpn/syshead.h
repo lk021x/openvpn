@@ -221,7 +221,6 @@
 
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>
-#undef S_ERROR
 #endif
 
 #ifdef HAVE_NET_IF_TUN_H

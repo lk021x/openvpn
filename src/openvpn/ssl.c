@@ -429,8 +429,8 @@ state_name (int state)
       return "S_ACTIVE";
     case S_NORMAL_OP:
       return "S_NORMAL_OP";
-    case S_ERROR:
-      return "S_ERROR";
+    case S_ERRORS:
+      return "S_ERRORS";
     default:
       return "S_???";
     }
@@ -858,7 +858,7 @@ lame_duck_must_die (const struct tls_session* session, interval_t *wakeup)
       else
 	return true;
     }
-  else if (lame->state == S_ERROR)
+  else if (lame->state == S_ERRORS)
     return true;
   else
     return false;
@@ -2020,7 +2020,7 @@ tls_process (struct tls_multi *multi,
 
   /* Make sure we were initialized and that we're not in an error state */
   ASSERT (ks->state != S_UNDEF);
-  ASSERT (ks->state != S_ERROR);
+  ASSERT (ks->state != S_ERRORS);
   ASSERT (session_id_defined (&session->session_id));
 
   /* Should we trigger a soft reset? -- new key, keeps old key for a while */
@@ -2386,7 +2386,7 @@ tls_process (struct tls_multi *multi,
 
 error:
   tls_clear_error();
-  ks->state = S_ERROR;
+  ks->state = S_ERRORS;
   msg (D_TLS_ERRORS, "TLS Error: TLS handshake failed");
   INCR_ERROR;
   gc_free (&gc);
@@ -2468,7 +2468,7 @@ tls_multi_process (struct tls_multi *multi,
 	   * (2) Reinitialize the session.
 	   * (3) Increment soft error count
 	   */
-	  if (ks->state == S_ERROR)
+	  if (ks->state == S_ERRORS)
 	    {
 	      ++multi->n_soft_errors;
 
@@ -2513,7 +2513,7 @@ tls_multi_process (struct tls_multi *multi,
   }
 
   /*
-   * A hard error means that TM_ACTIVE hit an S_ERROR state and that no
+   * A hard error means that TM_ACTIVE hit an S_ERRORS state and that no
    * other key state objects are S_ACTIVE or higher.
    */
   if (error)
@@ -2921,7 +2921,7 @@ tls_pre_decrypt (struct tls_multi *multi,
 
 	    /* Make sure we were initialized and that we're not in an error state */
 	    ASSERT (ks->state != S_UNDEF);
-	    ASSERT (ks->state != S_ERROR);
+	    ASSERT (ks->state != S_ERRORS);
 	    ASSERT (session_id_defined (&session->session_id));
 
 	    /* Let our caller know we processed a control channel packet */

@@ -328,9 +328,6 @@
 #endif
 
 #ifdef HAVE_SYS_MMAN_H
-#ifdef TARGET_DARWIN
-#define _P1003_1B_VISIBLE
-#endif /* TARGET_DARWIN */
 #include <sys/mman.h>
 #endif
 

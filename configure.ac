@@ -332,7 +332,7 @@ case "$host" in
 		AC_DEFINE_UNQUOTED([TARGET_PREFIX], ["M"], [Target prefix])
 		have_tap_header="yes"
 		dnl some Mac OS X tendering (we use vararg macros...)
-		CPPFLAGS="$CPPFLAGS -no-cpp-precomp"
+		CPPFLAGS="$CPPFLAGS -no-cpp-precomp -D_P1003_1B_VISIBLE"
 		;;
 	*-mingw*)
 		AC_DEFINE([TARGET_WIN32], [1], [Are we running WIN32?])

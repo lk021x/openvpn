@@ -58,4 +58,21 @@
 # endif
 #endif
 
+/*
+ * Our socket descriptor type.
+ */
+#ifdef WIN32
+#define SOCKET_UNDEFINED (INVALID_SOCKET)
+typedef SOCKET socket_descriptor_t;
+#else
+#define SOCKET_UNDEFINED (-1)
+typedef int socket_descriptor_t;
+#endif
+
+static inline int
+socket_defined (const socket_descriptor_t sd)
+{
+  return sd != SOCKET_UNDEFINED;
+}
+
 #endif

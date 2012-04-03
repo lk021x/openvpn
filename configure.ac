@@ -399,6 +399,24 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_SIGNAL
+
+AC_MSG_CHECKING([Apple specific settings])
+AC_EGREP_CPP(
+	[true],
+	[
+#if defined(__APPLE__)
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1070
+true
+#endif
+#endif
+	],
+	[
+		AC_MSG_RESULT([required])
+		CPPFLAGS="${CPPFLAGS} -D__APPLE_USE_RFC_3542=1"
+	],
+	[AC_MSG_RESULT([not required])]
+)
+
 AX_CPP_VARARG_MACRO_ISO
 AX_CPP_VARARG_MACRO_GCC
 AX_TYPE_SOCKLEN_T

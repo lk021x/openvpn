@@ -367,14 +367,6 @@
 #endif
 
 /*
- * Does this platform define SOL_IP
- * or only bsd-style IPPROTO_IP ?
- */
-#ifndef SOL_IP
-#define SOL_IP IPPROTO_IP
-#endif
-
-/*
  * Do we have a syslog capability?
  */
 #if defined(HAVE_OPENLOG) && defined(HAVE_SYSLOG)

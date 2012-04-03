@@ -532,6 +532,17 @@ AC_CHECK_DECLS(
 	,
 	[[${SOCKET_INCLUDES}]]
 )
+AC_CHECK_DECLS(
+	[SOL_IP],
+	,
+	[AC_CHECK_DECLS(
+		[IPPROTO_IP],
+		[AC_DEFINE_UNQUOTED([SOL_IP], [IPPROTO_IP], [SOL_IP emulation])],
+		[AC_MSG_ERROR([cannot find SOL_IP or IPPROTO_IP])],
+		[[${SOCKET_INCLUDES}]]
+	)],
+	[[${SOCKET_INCLUDES}]]
+)
 
 dnl We emulate signals in Windows
 AC_CHECK_DECLS(

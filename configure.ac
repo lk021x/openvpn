@@ -561,6 +561,17 @@ AC_CHECK_DECLS(
 	]]
 )
 
+AC_CHECK_DECLS(
+	[O_BINARY],
+	,
+	[AC_DEFINE([O_BINARY], [0], [O_BINARY replacement])],
+	[[
+		#ifdef HAVE_FCNTL_H
+		#include <fcntl.h>
+		#endif
+	]]
+)
+
 AC_FUNC_FORK
 
 AC_CHECK_FUNCS([ \

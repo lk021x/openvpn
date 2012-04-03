@@ -439,13 +439,6 @@
 #endif
 
 /*
- * Does this OS draw a distinction between binary and ascii files?
- */
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
-
-/*
  * Define a boolean value based
  * on Win32 status.
  */

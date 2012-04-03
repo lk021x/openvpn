@@ -439,16 +439,6 @@
 #endif
 
 /*
- * Define a boolean value based
- * on Win32 status.
- */
-#ifdef WIN32
-#define WIN32_0_1 1
-#else
-#define WIN32_0_1 0
-#endif
-
-/*
  * Our socket descriptor type.
  */
 #ifdef WIN32

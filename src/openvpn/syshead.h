@@ -591,11 +591,4 @@
  */
 #define ENABLE_CLIENT_NAT
 
-/*
- * Enable --memstats option
- */
-#ifdef TARGET_LINUX
-#define ENABLE_MEMSTATS
-#endif
-
 #endif

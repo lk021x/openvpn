@@ -685,7 +685,7 @@ old_CFLAGS="${CFLAGS}"
 CFLAGS="${CFLAGS} ${TAP_CFLAGS}"
 AC_CHECK_HEADERS(
 	[ \
-		net/if_tun.h net/tun/if_tun.h \
+		net/if_tun.h net/tun/if_tun.h net/if_tap.h \
 		linux/if_tun.h \
 		tap-windows.h \
 	],

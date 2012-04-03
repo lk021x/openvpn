@@ -28,16 +28,11 @@
 /*
  * Statistics counters and associated printf formats.
  */
-#ifdef USE_64_BIT_COUNTERS
-  typedef unsigned long long int counter_type;
-# ifdef WIN32
-#  define counter_format  "%I64u"
-# else
-#  define counter_format  "%llu"
-# endif
+typedef unsigned long long int counter_type;
+#ifdef WIN32
+# define counter_format  "%I64u"
 #else
-  typedef unsigned int counter_type;
-# define counter_format   "%u"
+# define counter_format  "%llu"
 #endif
 
 /*

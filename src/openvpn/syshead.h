@@ -375,14 +375,6 @@
 #endif
 
 /*
- * Disable ESEC
- */
-#if 0
-#undef EXTENDED_SOCKET_ERROR_CAPABILITY
-#define EXTENDED_SOCKET_ERROR_CAPABILITY 0
-#endif
-
-/*
  * Do we have a syslog capability?
  */
 #if defined(HAVE_OPENLOG) && defined(HAVE_SYSLOG)
@@ -545,12 +537,6 @@
 #if defined(HAVE_EPOLL_CREATE) && defined(HAVE_SYS_EPOLL_H)
 #define EPOLL 1
 #else
-#define EPOLL 0
-#endif
-
-/* Disable EPOLL */
-#if 0
-#undef EPOLL
 #define EPOLL 0
 #endif
 

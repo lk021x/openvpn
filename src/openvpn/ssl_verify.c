@@ -545,7 +545,7 @@ verify_check_crl_dir(const char *crl_dir, openvpn_x509_cert_t *cert)
 
   char *serial = x509_get_serial(cert, &gc);
 
-  if (!openvpn_snprintf(fn, sizeof(fn), "%s%c%s", crl_dir, OS_SPECIFIC_DIRSEP, serial))
+  if (!openvpn_snprintf(fn, sizeof(fn), "%s%c%s", crl_dir, PATH_SEPARATOR, serial))
     {
       msg (D_HANDSHAKE, "VERIFY CRL: filename overflow");
       goto cleanup;

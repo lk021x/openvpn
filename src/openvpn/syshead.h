@@ -446,15 +446,6 @@
 #endif
 
 /*
- * Directory separation char
- */
-#ifdef WIN32
-#define OS_SPECIFIC_DIRSEP '\\'
-#else
-#define OS_SPECIFIC_DIRSEP '/'
-#endif
-
-/*
  * Define a boolean value based
  * on Win32 status.
  */

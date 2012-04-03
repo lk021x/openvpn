@@ -1068,13 +1068,9 @@ gen_path (const char *directory, const char *filename, struct gc_arena *gc)
     {
       const size_t outsize = strlen(safe_filename) + (directory ? strlen (directory) : 0) + 16;
       struct buffer out = alloc_buf_gc (outsize, gc);
-      char dirsep[2];
-
-      dirsep[0] = OS_SPECIFIC_DIRSEP;
-      dirsep[1] = '\0';
 
       if (directory)
-	buf_printf (&out, "%s%s", directory, dirsep);
+	buf_printf (&out, "%s%c", directory, PATH_SEPARATOR);
       buf_printf (&out, "%s", safe_filename);
 
       return BSTR (&out);

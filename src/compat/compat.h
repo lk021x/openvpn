@@ -41,6 +41,12 @@
 #include <sys/socket.h>
 #endif
 
+#ifdef WIN32
+#define sleep(x) Sleep((x)*1000)
+#define random rand
+#define srandom srand
+#endif
+
 #ifndef HAVE_DIRNAME
 char * dirname(char *str);
 #endif /* HAVE_DIRNAME */

@@ -251,8 +251,6 @@ const char *ifconfig_options_string (const struct tuntap* tt, bool remote, bool 
 
 bool is_tun_p2p (const struct tuntap *tt);
 
-void warn_on_use_of_common_subnets (void);
-
 /*
  * Inline functions
  */

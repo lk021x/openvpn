@@ -59,6 +59,24 @@ static struct context *static_context; /* GLOBAL */
 
 static void do_init_first_time (struct context *c);
 
+static
+void
+warn_on_use_of_common_subnets (void)
+{
+  struct gc_arena gc = gc_new ();
+  struct route_gateway_info rgi;
+  const int needed = (RGI_ADDR_DEFINED|RGI_NETMASK_DEFINED);
+
+  get_default_gateway (&rgi);
+  if ((rgi.flags & needed) == needed)
+    {
+      const in_addr_t lan_network = rgi.gateway.addr & rgi.gateway.netmask;
+      if (lan_network == 0xC0A80000 || lan_network == 0xC0A80100)
+	msg (M_WARN, "NOTE: your local LAN uses the extremely common subnet address 192.168.0.x or 192.168.1.x.  Be aware that this might create routing conflicts if you connect to the VPN server from public locations such as internet cafes that use the same subnet.");
+    }
+  gc_free (&gc);
+}
+
 void
 context_clear (struct context *c)
 {

@@ -242,23 +242,6 @@ check_addr_clash (const char *name,
   gc_free (&gc);
 }
 
-void
-warn_on_use_of_common_subnets (void)
-{
-  struct gc_arena gc = gc_new ();
-  struct route_gateway_info rgi;
-  const int needed = (RGI_ADDR_DEFINED|RGI_NETMASK_DEFINED);
-
-  get_default_gateway (&rgi);
-  if ((rgi.flags & needed) == needed)
-    {
-      const in_addr_t lan_network = rgi.gateway.addr & rgi.gateway.netmask;
-      if (lan_network == 0xC0A80000 || lan_network == 0xC0A80100)
-	msg (M_WARN, "NOTE: your local LAN uses the extremely common subnet address 192.168.0.x or 192.168.1.x.  Be aware that this might create routing conflicts if you connect to the VPN server from public locations such as internet cafes that use the same subnet.");
-    }
-  gc_free (&gc);
-}
-
 /*
  * Complain if --dev tap and --ifconfig is used on an OS for which
  * we don't have a custom tap ifconfig template below.

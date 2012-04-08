@@ -1029,7 +1029,6 @@ add_routes (struct route_list *rl, struct route_ipv6_list *rl6, const struct tun
       for (i = 0; i < rl->n; ++i)
 	{
 	  struct route *r = &rl->routes[i];
-	  check_subnet_conflict (r->network, r->netmask, "route");
 	  if (flags & ROUTE_DELETE_FIRST)
 	    delete_route (r, tt, flags, &rl->rgi, es);
 	  add_route (r, tt, flags, &rl->rgi, es);

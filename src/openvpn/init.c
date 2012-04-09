@@ -2384,7 +2384,7 @@ do_init_frame (struct context *c)
    * Adjust frame size based on the --tun-mtu-extra parameter.
    */
   if (c->options.ce.tun_mtu_extra_defined)
-    tun_adjust_frame_parameters (&c->c2.frame, c->options.ce.tun_mtu_extra);
+    frame_add_to_extra_tun (&c->c2.frame, c->options.ce.tun_mtu_extra);
 
   /*
    * Adjust frame size based on link socket parameters.

@@ -255,12 +255,6 @@ bool is_tun_p2p (const struct tuntap *tt);
  * Inline functions
  */
 
-static inline void
-tun_adjust_frame_parameters (struct frame* frame, int size)
-{
-  frame_add_to_extra_tun (frame, size);
-}
-
 /*
  * Should ifconfig be called before or after
  * tun dev open?

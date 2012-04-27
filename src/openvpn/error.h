@@ -161,7 +161,7 @@ bool dont_mute (unsigned int flags); /* check muting filter */
 #  define dmsg(flags, args...)
 # endif
 #else
-# if !PEDANTIC
+# ifndef ENABLE_LINT
 #  ifdef _MSC_VER
 #   pragma message("this compiler appears to lack vararg macros which will cause a significant degradation in efficiency")
 #  else

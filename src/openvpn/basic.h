@@ -44,4 +44,18 @@
 # define unlikely(x)    (x)
 #endif
 
+/*
+ * Lint mode is meant to accomplish lint-style program checking,
+ * not to build a working executable.
+ */
+#ifdef ENABLE_LINT
+# undef HAVE_CPP_VARARG_MACRO_GCC
+# undef HAVE_CPP_VARARG_MACRO_ISO
+# undef EMPTY_ARRAY_SIZE
+# define EMPTY_ARRAY_SIZE 1
+# ifdef inline
+#  undef inline
+# endif
+#endif
+
 #endif

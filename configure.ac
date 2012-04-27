@@ -234,9 +234,16 @@ AC_ARG_ENABLE(
 
 AC_ARG_ENABLE(
 	[pedantic],
-	[AS_HELP_STRING([--enable-pedantic], [enable pedantic compiler warnings, will not generate a working executable (debugging option) @<:@default=no@:>@])],
+	[AS_HELP_STRING([--enable-pedantic], [enable pedantic compiler warnings (debugging option) @<:@default=no@:>@])],
 	,
 	[enable_pedantic="no"]
+)
+
+AC_ARG_ENABLE(
+	[lint],
+	[AS_HELP_STRING([--enable-lint], [enable lint friendly build, will not generate a working executable (debugging option) @<:@default=no@:>@])],
+	,
+	[enable_lint="no"]
 )
 
 AC_ARG_ENABLE(
@@ -384,7 +391,6 @@ ifdef(
 )
 
 AC_C_CONST
-AC_C_INLINE
 AC_C_VOLATILE
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
@@ -1014,6 +1020,10 @@ if test "${enable_pkcs11}" = "yes"; then
 	AC_DEFINE([ENABLE_PKCS11], [1], [Enable PKCS11])
 fi
 
+if test "${enable_lint}" = "yes"; then
+	enable_pedantic="yes"
+	AC_DEFINE([ENABLE_LINT], [1], [Enable lint build])
+fi
 if test "${enable_pedantic}" = "yes"; then
 	enable_strict="yes"
 	CFLAGS="${CFLAGS} -pedantic"
@@ -1022,6 +1032,10 @@ fi
 if test "${enable_strict}" = "yes"; then
 	CFLAGS="${CFLAGS} -Wall -Wno-unused-parameter -Wno-unused-function"
 fi
+
+# check inline after pedantic/lint CFLAGS as it may produce
+# different result
+AC_C_INLINE
 
 if test "${WIN32}" = "yes"; then
 	test -z "${MAN2HTML}" && AC_MSG_ERROR([man2html is required for win32])

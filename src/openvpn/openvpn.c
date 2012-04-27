@@ -133,7 +133,7 @@ openvpn_main (int argc, char *argv[])
 {
   struct context c;
 
-#if PEDANTIC
+#ifdef ENABLE_LINT
   fprintf (stderr, "Sorry, I was built with --enable-pedantic and I am incapable of doing any real work!\n");
   return 1;
 #endif

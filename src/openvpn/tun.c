@@ -1377,8 +1377,6 @@ close_tun_generic (struct tuntap *tt)
 #error header file linux/sockios.h required
 #endif
 
-#if !PEDANTIC
-
 void
 open_tun (const char *dev, const char *dev_type, const char *dev_node, struct tuntap *tt)
 {
@@ -1485,16 +1483,6 @@ open_tun (const char *dev, const char *dev_type, const char *dev_node, struct tu
     }
   return;
 }
-
-#else
-
-void
-open_tun (const char *dev, const char *dev_type, const char *dev_node, struct tuntap *tt)
-{
-  ASSERT (0);
-}
-
-#endif
 
 #else
 

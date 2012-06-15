@@ -42,6 +42,7 @@
 #include "lzo.h"
 #include "pushlist.h"
 #include "clinat.h"
+#include "tun-engine-options.h"
 
 /*
  * Maximum number of parameters associated with an option,
@@ -63,7 +64,7 @@ extern const char title_string[];
 struct options_pre_pull
 {
   bool tuntap_options_defined;
-  struct tuntap_options tuntap_options;
+  struct tun_engine_options_s tuntap_options;
 
   bool routes_defined;
   struct route_option_list *routes;
@@ -272,7 +273,7 @@ struct options
 
   int resolve_retry_seconds;    /* If hostname resolve fails, retry for n seconds */
 
-  struct tuntap_options tuntap_options;
+  struct tun_engine_options_s tuntap_options;
 
   /* Misc parms */
   const char *username;

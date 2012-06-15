@@ -618,7 +618,7 @@ x_check_status (int status,
 	}
 #elif defined(WIN32)
       /* get possible driver error from TAP-Windows driver */
-      extended_msg = tap_win_getinfo (tt, &gc);
+      extended_msg = tap_info (tt, &gc);
 #endif
       if (!ignore_sys_error (my_errno))
 	{

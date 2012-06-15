@@ -152,7 +152,7 @@ helper_client_server (struct options *o)
 /*
    * Get tun/tap/null device type
    */
-  const int dev = dev_type_enum (o->dev, o->dev_type);
+  const int dev = tun_dev_type_enum (o->dev, o->dev_type);
   const int topology = o->topology;
 
   /* 

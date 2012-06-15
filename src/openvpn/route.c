@@ -41,6 +41,7 @@
 #include "socket.h"
 #include "manage.h"
 #include "win32.h"
+#include "tun-engine-windows-util.h"
 #include "options.h"
 
 #include "memdbg.h"

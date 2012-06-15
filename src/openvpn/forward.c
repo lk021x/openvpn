@@ -46,6 +46,7 @@
 #include "occ-inline.h"
 #include "ping-inline.h"
 #include "mstats.h"
+#include "tun-engine-windows-util.h"
 
 counter_type link_read_bytes_global;  /* GLOBAL */
 counter_type link_write_bytes_global; /* GLOBAL */
@@ -59,8 +60,8 @@ wait_status_string (struct context *c, struct gc_arena *gc)
 {
   struct buffer out = alloc_buf_gc (64, gc);
   buf_printf (&out, "I/O WAIT %s|%s|%s|%s %s",
-	      tun_stat (c->c1.tuntap, EVENT_READ, gc),
-	      tun_stat (c->c1.tuntap, EVENT_WRITE, gc),
+	      tun_status (c->c1.tuntap, EVENT_READ, gc),
+	      tun_status (c->c1.tuntap, EVENT_WRITE, gc),
 	      socket_stat (c->c2.link_socket, EVENT_READ, gc),
 	      socket_stat (c->c2.link_socket, EVENT_WRITE, gc),
 	      tv_string (&c->c2.timeval, gc));
@@ -900,7 +901,7 @@ process_incoming_link (struct context *c)
       buffer_turnover (orig_buf, &c->c2.to_tun, &c->c2.buf, &c->c2.buffers->read_link_buf);
 
       /* to_tun defined + unopened tuntap can cause deadlock */
-      if (!tuntap_defined (c->c1.tuntap))
+      if (!tun_defined (c->c1.tuntap))
 	c->c2.to_tun.len = 0;
     }
   else
@@ -927,13 +928,7 @@ read_incoming_tun (struct context *c)
   perf_push (PERF_READ_IN_TUN);
 
   c->c2.buf = c->c2.buffers->read_tun_buf;
-#ifdef TUN_PASS_BUFFER
-  read_tun_buffered (c->c1.tuntap, &c->c2.buf, MAX_RW_SIZE_TUN (&c->c2.frame));
-#else
-  ASSERT (buf_init (&c->c2.buf, FRAME_HEADROOM (&c->c2.frame)));
-  ASSERT (buf_safe (&c->c2.buf, MAX_RW_SIZE_TUN (&c->c2.frame)));
-  c->c2.buf.len = read_tun (c->c1.tuntap, BPTR (&c->c2.buf), MAX_RW_SIZE_TUN (&c->c2.frame));
-#endif
+  tun_read (c->c1.tuntap, &c->c2.buf, FRAME_HEADROOM (&c->c2.frame), MAX_RW_SIZE_TUN (&c->c2.frame));
 
 #ifdef PACKET_TRUNCATION_CHECK
   ipv4_packet_size_verify (BPTR (&c->c2.buf),
@@ -944,7 +939,7 @@ read_incoming_tun (struct context *c)
 #endif
 
   /* Was TUN/TAP interface stopped? */
-  if (tuntap_stop (c->c2.buf.len))
+  if (tun_stop (c->c1.tuntap, c->c2.buf.len))
     {
       register_signal (c, SIGTERM, "tun-stop");
       msg (M_INFO, "TUN/TAP interface has been stopped, exiting");
@@ -1242,12 +1237,7 @@ process_outgoing_tun (struct context *c)
 			       &c->c2.n_trunc_tun_write);
 #endif
 
-#ifdef TUN_PASS_BUFFER
-      size = write_tun_buffered (c->c1.tuntap, &c->c2.to_tun);
-#else
-      size = write_tun (c->c1.tuntap, BPTR (&c->c2.to_tun), BLEN (&c->c2.to_tun));
-#endif
-
+      size = tun_write (c->c1.tuntap, &c->c2.to_tun);
       if (size > 0)
 	c->c2.tun_write_bytes += size;
       check_status (size, "write to TUN/TAP", NULL, c->c1.tuntap);
@@ -1301,8 +1291,8 @@ pre_select (struct context *c)
   if (check_debug_level (D_TAP_WIN_DEBUG))
     {
       c->c2.timeval.tv_sec = 1;
-      if (tuntap_defined (c->c1.tuntap))
-	tun_show_debug (c->c1.tuntap);
+      if (tun_defined (c->c1.tuntap))
+	tun_debug_show (c->c1.tuntap);
     }
 #endif
 

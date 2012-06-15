@@ -276,9 +276,9 @@ print_status (const struct context *c, struct status_output *so)
   status_printf (so, "Post-decrypt truncations," counter_format, c->c2.n_trunc_post_decrypt);
 #endif
 #ifdef WIN32
-  if (tuntap_defined (c->c1.tuntap))
+  if (tun_defined (c->c1.tuntap))
     status_printf (so, "TAP-WIN32 driver status,\"%s\"",
-	 tap_win_getinfo (c->c1.tuntap, &gc));
+	 tap_info (c->c1.tuntap, &gc));
 #endif
 
   status_printf (so, "END");

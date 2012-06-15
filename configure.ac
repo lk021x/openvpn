@@ -527,6 +527,12 @@ AC_CHECK_TYPE(
 	[AC_MSG_ERROR([struct sockaddr_in6 not found, needed for ipv6 transport support.])],
 	[[${SOCKET_INCLUDES}]]
 )
+AC_CHECK_TYPES(
+	[struct ip],
+	,
+	,
+	[[${SOCKET_INCLUDES}]]
+)
 AC_CHECK_DECLS(
 	[SO_MARK],
 	,

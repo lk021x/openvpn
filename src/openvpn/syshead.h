@@ -199,62 +199,6 @@
 #include <resolv.h>
 #endif
 
-#if defined(TARGET_LINUX)
-
-#if defined(HAVE_NETINET_IF_ETHER_H)
-#include <netinet/if_ether.h>
-#endif
-
-#ifdef HAVE_LINUX_IF_TUN_H
-#include <linux/if_tun.h>
-#endif
-
-#ifdef HAVE_LINUX_SOCKIOS_H
-#include <linux/sockios.h>
-#endif
-
-#ifdef HAVE_LINUX_TYPES_H
-#include <linux/types.h>
-#endif
-
-#ifdef HAVE_LINUX_ERRQUEUE_H
-#include <linux/errqueue.h>
-#endif
-
-#elif defined(TARGET_SOLARIS)
-
-#ifdef HAVE_NET_IF_TUN_H
-#include <net/if_tun.h>
-#endif
-
-#ifdef HAVE_SYS_SOCKIO_H
-#include <sys/sockio.h>
-#endif
-
-#elif defined(TARGET_OPENBSD) || defined(TARGET_FREEBSD) || defined(TARGET_NETBSD) || defined(TARGET_DRAGONFLY)
-
-#ifdef HAVE_SYS_UIO_H
-#include <sys/uio.h>
-#endif
-
-#ifdef HAVE_NETINET_IN_SYSTM_H
-#include <netinet/in_systm.h>
-#endif
-
-#ifdef HAVE_NET_IF_TUN_H
-#include <net/if_tun.h>
-#endif
-
-#ifdef HAVE_NET_TUN_IF_TUN_H
-#include <net/tun/if_tun.h>
-#endif
-
-#ifdef HAVE_NET_IF_TAP_H
-#include <net/if_tap.h>
-#endif
-
-#endif
-
 /*
  * Do we have the capability to support the --passtos option?
  */

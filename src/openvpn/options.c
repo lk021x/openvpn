@@ -58,6 +58,7 @@
 #include "helper.h"
 #include "manage.h"
 #include "forward.h"
+#include "tun-engine-windows-util.h"
 #include <ctype.h>
 
 #include "memdbg.h"
@@ -1100,7 +1101,7 @@ show_dhcp_option_addrs (const char *name, const in_addr_t *array, int len)
 }
 
 static void
-show_tuntap_options (const struct tuntap_options *o)
+show_tuntap_options (const tun_engine_options_t o)
 {
   SHOW_BOOL (ip_win32_defined);
   SHOW_INT (ip_win32_type);
@@ -1816,7 +1817,7 @@ options_postprocess_verify_ce (const struct options *options, const struct conne
   /*
    * Get tun/tap/null device type
    */
-  dev = dev_type_enum (options->dev, options->dev_type);
+  dev = tun_dev_type_enum (options->dev, options->dev_type);
 
   /*
    * If "proto tcp" is specified, make sure we know whether it is
@@ -2307,7 +2308,7 @@ options_postprocess_verify_ce (const struct options *options, const struct conne
 static void
 options_postprocess_mutate_ce (struct options *o, struct connection_entry *ce)
 {
-  const int dev = dev_type_enum (o->dev, o->dev_type);
+  const int dev = tun_dev_type_enum (o->dev, o->dev_type);
 
 #if P2MP_SERVER
   if (o->server_defined || o->server_bridge_defined || o->server_bridge_proxy_dhcp)
@@ -2375,7 +2376,7 @@ options_postprocess_mutate_ce (struct options *o, struct connection_entry *ce)
 static void
 options_postprocess_mutate_invariant (struct options *options)
 {
-  const int dev = dev_type_enum (options->dev, options->dev_type);
+  const int dev = tun_dev_type_enum (options->dev, options->dev_type);
 
   /*
    * In forking TCP server mode, you don't need to ifconfig
@@ -2872,7 +2873,7 @@ options_string (const struct options *o,
    * Tunnel Options
    */
 
-  buf_printf (&out, ",dev-type %s", dev_type_string (o->dev, o->dev_type));
+  buf_printf (&out, ",dev-type %s", tun_dev_type_string (o->dev, o->dev_type));
   buf_printf (&out, ",link-mtu %d", EXPANDED_SIZE (frame));
   buf_printf (&out, ",tun-mtu %d", PAYLOAD_SIZE (frame));
   buf_printf (&out, ",proto %s", proto2ascii (proto_remote (o->ce.proto, remote), true));
@@ -2885,7 +2886,7 @@ options_string (const struct options *o,
    */
   if (!tt)
     {
-      tt = init_tun (o->dev,
+      tt = tun_init (o->dev,
 		     o->dev_type,
 		     o->topology,
 		     o->ifconfig_local,
@@ -2896,6 +2897,7 @@ options_string (const struct options *o,
 		     (in_addr_t)0,
 		     (in_addr_t)0,
 		     false,
+		     o->tun_ipv6,
 		     NULL);
       if (tt)
 	tt_local = true;
@@ -2903,7 +2905,7 @@ options_string (const struct options *o,
 
   if (tt && o->mode == MODE_POINT_TO_POINT && !PULL_DEFINED(o))
     {
-      const char *ios = ifconfig_options_string (tt, remote, o->ifconfig_nowarn, gc);
+      const char *ios = tun_ifconfig_options_string (tt, remote, o->ifconfig_nowarn, gc);
       if (ios && strlen (ios))
 	buf_printf (&out, ",ifconfig %s", ios);
     }
@@ -5830,7 +5832,7 @@ add_option (struct options *options,
   else if (streq (p[0], "ip-win32") && p[1])
     {
       const int index = ascii2ipset (p[1]);
-      struct tuntap_options *to = &options->tuntap_options;
+      tun_engine_options_t to = &options->tuntap_options;
 
       VERIFY_PERMISSION (OPT_P_IPWIN32);
 
@@ -5883,7 +5885,7 @@ add_option (struct options *options,
     }
   else if (streq (p[0], "dhcp-option") && p[1])
     {
-      struct tuntap_options *o = &options->tuntap_options;
+      tun_engine_options_t o = &options->tuntap_options;
       VERIFY_PERMISSION (OPT_P_IPWIN32);
 
       if (streq (p[1], "DOMAIN") && p[2])

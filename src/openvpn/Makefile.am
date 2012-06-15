@@ -110,6 +110,18 @@ openvpn_SOURCES = \
 	status.c status.h \
 	syshead.h \
 	tun.c tun.h \
+	tun-engine.h tun-engine-options.h \
+	tun-engine-common.c tun-engine-common.h \
+	tun-engine-common-bsd.c tun-engine-common-bsd.h \
+	tun-engine-darwin.c \
+	tun-engine-dragonfly.c \
+	tun-engine-freebsd.c \
+	tun-engine-generic.c \
+	tun-engine-linux.c tun-engine-linux-options.h \
+	tun-engine-netbsd.c \
+	tun-engine-openbsd.c \
+	tun-engine-solaris.c \
+	tun-engine-windows.c tun-engine-windows-options.h tun-engine-windows-util.h \
 	win32.h win32.c \
 	cryptoapi.h cryptoapi.c
 openvpn_LDADD = \

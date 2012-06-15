@@ -256,7 +256,7 @@ multi_init (struct multi_context *m, struct context *t, bool tcp_mode, int threa
   /*
    * Get tun/tap/null device type
    */
-  dev = dev_type_enum (t->options.dev, t->options.dev_type);
+  dev = tun_dev_type_enum (t->options.dev, t->options.dev_type);
 
   /*
    * Init our multi_context object.

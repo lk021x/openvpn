@@ -43,6 +43,7 @@
 #include "lladdr.h"
 #include "ping.h"
 #include "mstats.h"
+#include "tun-engine-windows-util.h"
 
 #include "memdbg.h"
 
@@ -942,7 +943,7 @@ do_persist_tuntap (const struct options *options)
 	)
 	msg (M_FATAL|M_OPTERR,
 	     "options --mktun or --rmtun should only be used together with --dev");
-      tuncfg (options->dev, options->dev_type, options->dev_node,
+      tun_config (options->dev, options->dev_type, options->dev_node,
 	      options->persist_mode,
 	      options->username, options->groupname, &options->tuntap_options);
       if (options->persist_mode && options->lladdr)
@@ -1188,7 +1189,7 @@ do_init_route_list (const struct options *options,
 		    struct env_set *es)
 {
   const char *gw = NULL;
-  int dev = dev_type_enum (options->dev, options->dev_type);
+  int dev = tun_dev_type_enum (options->dev, options->dev_type);
   int metric = 0;
 
   if (dev == DEV_TYPE_TUN && (options->topology == TOP_NET30 || options->topology == TOP_P2P))
@@ -1222,7 +1223,7 @@ do_init_route_ipv6_list (const struct options *options,
 		    struct env_set *es)
 {
   const char *gw = NULL;
-  int dev = dev_type_enum (options->dev, options->dev_type);
+  int dev = tun_dev_type_enum (options->dev, options->dev_type);
   int metric = -1;		/* no metric set */
 
   gw = options->ifconfig_ipv6_remote;		/* default GW = remote end */
@@ -1384,7 +1385,7 @@ save_pulled_options_digest (struct context *c, const struct md5_digest *newdiges
 static void
 do_init_tun (struct context *c)
 {
-  c->c1.tuntap = init_tun (c->options.dev,
+  c->c1.tuntap = tun_init (c->options.dev,
 			   c->options.dev_type,
 			   c->options.topology,
 			   c->options.ifconfig_local,
@@ -1395,12 +1396,10 @@ do_init_tun (struct context *c)
 			   addr_host (&c->c1.link_socket_addr.local),
 			   addr_host (&c->c1.link_socket_addr.remote),
 			   !c->options.ifconfig_nowarn,
+			   c->options.tun_ipv6,
 			   c->c2.es);
 
-  /* flag tunnel for IPv6 config if --tun-ipv6 is set */
-  c->c1.tuntap->ipv6 = c->options.tun_ipv6;
-
-  init_tun_post (c->c1.tuntap,
+  tun_init_post (c->c1.tuntap,
 		 &c->c2.frame,
 		 &c->options.tuntap_options);
 
@@ -1418,7 +1417,7 @@ do_open_tun (struct context *c)
   bool ret = false;
 
   c->c2.ipv4_tun = (!c->options.tun_ipv6
-		    && is_dev_type (c->options.dev, c->options.dev_type, "tun"));
+		    && tun_is_dev_type (c->options.dev, c->options.dev_type, "tun"));
 
   if (!c->c1.tuntap)
     {
@@ -1434,21 +1433,22 @@ do_open_tun (struct context *c)
       if (c->options.routes_ipv6 && c->c1.route_ipv6_list )
 	do_init_route_ipv6_list (&c->options, c->c1.route_ipv6_list, false, c->c2.es);
 
-      /* do ifconfig */
-      if (!c->options.ifconfig_noexec
-	  && ifconfig_order () == IFCONFIG_BEFORE_TUN_OPEN)
+      /* do ifconfig - win32 before tun open */
+      if (!c->options.ifconfig_noexec && tun_config_before_open(c->c1.tuntap))
 	{
 	  /* guess actual tun/tap unit number that will be returned
 	     by open_tun */
-	  const char *guess = guess_tuntap_dev (c->options.dev,
+	  const char *guess = tun_device_guess (c->c1.tuntap,
+	 					c->options.dev,
 						c->options.dev_type,
 						c->options.dev_node,
 						&gc);
-	  do_ifconfig (c->c1.tuntap, guess, TUN_MTU_SIZE (&c->c2.frame), c->c2.es);
+	  if (guess != NULL)
+	    tun_ifconfig (c->c1.tuntap, guess, TUN_MTU_SIZE (&c->c2.frame), c->c2.es);
 	}
 
       /* open the tun device */
-      open_tun (c->options.dev, c->options.dev_type, c->options.dev_node,
+      tun_open (c->options.dev, c->options.dev_type, c->options.dev_node,
 		c->c1.tuntap);
 
       /* set the hardware address */
@@ -1456,10 +1456,9 @@ do_open_tun (struct context *c)
 	  set_lladdr(c->c1.tuntap->actual_name, c->options.lladdr, c->c2.es);
 
       /* do ifconfig */
-      if (!c->options.ifconfig_noexec
-	  && ifconfig_order () == IFCONFIG_AFTER_TUN_OPEN)
+      if (!c->options.ifconfig_noexec && !tun_config_before_open(c->c1.tuntap))
 	{
-	  do_ifconfig (c->c1.tuntap, c->c1.tuntap->actual_name, TUN_MTU_SIZE (&c->c2.frame), c->c2.es);
+	  tun_ifconfig (c->c1.tuntap, c->c1.tuntap->actual_name, TUN_MTU_SIZE (&c->c2.frame), c->c2.es);
 	}
 
       /* run the up script */
@@ -1467,7 +1466,7 @@ do_open_tun (struct context *c)
 		   c->plugins,
 		   OPENVPN_PLUGIN_UP,
 		   c->c1.tuntap->actual_name,
-		   dev_type_string (c->options.dev, c->options.dev_type),
+		   tun_dev_type_string (c->options.dev, c->options.dev_type),
 		   TUN_MTU_SIZE (&c->c2.frame),
 		   EXPANDED_SIZE (&c->c2.frame),
 		   print_in_addr_t (c->c1.tuntap->local, IA_EMPTY_IF_UNDEF, &gc),
@@ -1504,7 +1503,7 @@ do_open_tun (struct context *c)
 		     c->plugins,
 		     OPENVPN_PLUGIN_UP,
 		     c->c1.tuntap->actual_name,
-		     dev_type_string (c->options.dev, c->options.dev_type),
+		     tun_dev_type_string (c->options.dev, c->options.dev_type),
 		     TUN_MTU_SIZE (&c->c2.frame),
 		     EXPANDED_SIZE (&c->c2.frame),
 		     print_in_addr_t (c->c1.tuntap->local, IA_EMPTY_IF_UNDEF, &gc),
@@ -1526,7 +1525,7 @@ static void
 do_close_tun_simple (struct context *c)
 {
   msg (D_CLOSE, "Closing TUN/TAP interface");
-  close_tun (c->c1.tuntap);
+  tun_close (c->c1.tuntap);
   c->c1.tuntap = NULL;
   c->c1.tuntap_owned = false;
 #if P2MP

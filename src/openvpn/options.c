@@ -530,7 +530,7 @@ static const char usage_message[] =
   "--keysize n     : Size of cipher key in bits (optional).\n"
   "                  If unspecified, defaults to cipher-specific default.\n"
 #endif
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   "--engine [name] : Enable OpenSSL hardware crypto engine functionality.\n"
 #endif
   "--no-replay     : Disable replay protection.\n"
@@ -557,7 +557,7 @@ static const char usage_message[] =
   "                  number, such as 1 (default), 2, etc.\n"
   "--ca file       : Certificate authority file in .pem format containing\n"
   "                  root certificate.\n"
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   "--capath dir    : A directory of trusted certificates (CAs"
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
   " and CRLs).\n"
@@ -565,7 +565,7 @@ static const char usage_message[] =
   ").\n"
   "                  WARNING: no support of CRL available with this version.\n"
 #endif /* OPENSSL_VERSION_NUMBER >= 0x00907000L */
-#endif /* ENABLE_CRYPTO_POLARSSL */
+#endif /* ENABLE_CRYPTO_OPENSSL */
   "--dh file       : File containing Diffie Hellman parameters\n"
   "                  in .pem format (for --tls-server only).\n"
   "                  Use \"openssl dhparam -out dh1024.pem 1024\" to generate.\n"
@@ -1559,9 +1559,9 @@ show_settings (const struct options *o)
   SHOW_STR (prng_hash);
   SHOW_INT (prng_nonce_secret_len);
   SHOW_INT (keysize);
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   SHOW_STR (engine);
-#endif /* ENABLE_CRYPTO_POLARSSL */
+#endif /* ENABLE_CRYPTO_OPENSSL */
   SHOW_BOOL (replay);
   SHOW_BOOL (mute_replay_warnings);
   SHOW_INT (replay_window);
@@ -1582,7 +1582,7 @@ show_settings (const struct options *o)
   SHOW_STR (dh_file);
   SHOW_STR (cert_file);
   SHOW_STR (priv_key_file);
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   SHOW_STR (pkcs12_file);
 #endif
 #ifdef ENABLE_CRYPTOAPI
@@ -2258,7 +2258,7 @@ options_postprocess_verify_ce (const struct options *options, const struct conne
       MUST_BE_UNDEF (dh_file);
       MUST_BE_UNDEF (cert_file);
       MUST_BE_UNDEF (priv_key_file);
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
       MUST_BE_UNDEF (pkcs12_file);
 #endif
       MUST_BE_UNDEF (cipher_list);
@@ -6270,7 +6270,7 @@ add_option (struct options *options,
       VERIFY_PERMISSION (OPT_P_GENERAL);
       options->test_crypto = true;
     }
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   else if (streq (p[0], "engine"))
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);
@@ -6281,7 +6281,7 @@ add_option (struct options *options,
       else
 	options->engine = "auto";
     }  
-#endif /* ENABLE_CRYPTO_POLARSSL */
+#endif /* ENABLE_CRYPTO_OPENSSL */
 #ifdef HAVE_EVP_CIPHER_CTX_SET_KEY_LENGTH
   else if (streq (p[0], "keysize") && p[1])
     {
@@ -6329,13 +6329,13 @@ add_option (struct options *options,
 	  options->ca_file_inline = p[2];
 	}
     }
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   else if (streq (p[0], "capath") && p[1])
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);
       options->ca_path = p[1];
     }
-#endif /* ENABLE_CRYPTO_POLARSSL */
+#endif /* ENABLE_CRYPTO_OPENSSL */
   else if (streq (p[0], "dh") && p[1])
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);
@@ -6384,7 +6384,7 @@ add_option (struct options *options,
 	  options->priv_key_file_inline = p[2];
 	}
     }
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   else if (streq (p[0], "pkcs12") && p[1])
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);
@@ -6394,7 +6394,7 @@ add_option (struct options *options,
 	  options->pkcs12_file_inline = p[2];
 	}
     }
-#endif /* ENABLE_CRYPTO_POLARSSL */
+#endif /* ENABLE_CRYPTO_OPENSSL */
   else if (streq (p[0], "askpass"))
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);
@@ -6456,7 +6456,7 @@ add_option (struct options *options,
       warn_multiple_script (options->tls_verify, "tls-verify");
       options->tls_verify = string_substitute (p[1], ',', ' ', &options->gc);
     }
-#ifndef ENABLE_CRYPTO_POLARSSL
+#ifdef ENABLE_CRYPTO_OPENSSL
   else if (streq (p[0], "tls-export-cert") && p[1])
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);

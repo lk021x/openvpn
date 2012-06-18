@@ -1942,8 +1942,7 @@ key_schedule_free (struct key_schedule *ks, bool free_ssl_ctx)
 static void
 init_crypto_pre (struct context *c, const unsigned int flags)
 {
-  if (c->options.engine)
-    crypto_init_lib_engine (c->options.engine);
+  crypto_init_lib_options (&c->options);
 
   if (flags & CF_LOAD_PERSISTED_PACKET_ID)
     {

@@ -70,4 +70,7 @@ typedef HMAC_CTX hmac_ctx_t;
 #define DES_KEY_LENGTH 8
 #define MD4_DIGEST_LENGTH 	16
 
+ENGINE *
+openssl_engine_load (const char *engine, const char * const *cmd_pre, const char * const *cmd_post);
+
 #endif /* CRYPTO_OPENSSL_H_ */

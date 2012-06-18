@@ -59,7 +59,7 @@
  */
 
 void
-crypto_init_lib_engine (const char *engine_name)
+crypto_init_lib_options (const struct options *options)
 {
   msg (M_WARN, "Note: PolarSSL hardware crypto engine functionality is not "
       "available");

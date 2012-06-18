@@ -3717,6 +3717,16 @@ standalone option to list the crypto engines which are
 supported by OpenSSL.
 .\"*********************************************************
 .TP
+.B \-\-engine-cmd-pre cmd arg ...
+
+Pass engine pre commands, use "(null)" to specify null agument.
+.\"*********************************************************
+.TP
+.B \-\-engine-cmd-post cmd arg ...
+
+Pass engine post commands, use "(null)" to specify null agument.
+.\"*********************************************************
+.TP
 .B \-\-engine-pvk engine-name
 Enable OpenSSL hardware-based crypto engine functionality for private key
 operations.
@@ -3731,6 +3741,16 @@ option. Use the
 .B \-\-show-engines
 standalone option to list the crypto engines which are
 supported by OpenSSL.
+.\"*********************************************************
+.TP
+.B \-\-engine-pvk-cmd-pre cmd arg ...
+
+Pass engine pre commands, use "(null)" to specify null agument.
+.\"*********************************************************
+.TP
+.B \-\-engine-pvk-cmd-post cmd arg ...
+
+Pass engine post commands, use "(null)" to specify null agument.
 .\"*********************************************************
 .TP
 .B \-\-no-replay

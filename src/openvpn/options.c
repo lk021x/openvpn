@@ -533,8 +533,12 @@ static const char usage_message[] =
 #ifdef ENABLE_CRYPTO_OPENSSL
   "--engine [name]   : Enable OpenSSL hardware crypto engine functionality\n"
   "                    as default.\n"
+  "--engine-cmd-pre  name arg ... : Engine pre commands.\n"
+  "--engine-cmd-post name arg ... : Engine post commands.\n"
   "--engine-pvk name : Enable OpenSSL hardware crypto engine functionality\n"
   "                    for private key operations.\n"
+  "--engine-pvk-cmd-pre  name arg ... : Engine pre commands.\n"
+  "--engine-pvk-cmd-post name arg ... : Engine post commands.\n"
 #endif
   "--no-replay     : Disable replay protection.\n"
   "--mute-replay-warnings : Silence the output of replay warnings to log file.\n"
@@ -1564,7 +1568,33 @@ show_settings (const struct options *o)
   SHOW_INT (keysize);
 #ifdef ENABLE_CRYPTO_OPENSSL
   SHOW_STR (engine);
+  {
+    int i;
+    for (i=0;i<MAX_PARMS && o->engine_cmd_pre[i] != NULL;i+=2)
+      {
+        SHOW_PARM (engine_cmd_pre_cmd, o->engine_cmd_pre[i], "%s");
+        SHOW_PARM (engine_cmd_pre_arg, o->engine_cmd_pre[i+1], "%s");
+      }
+    for (i=0;i<MAX_PARMS && o->engine_cmd_post[i] != NULL;i+=2)
+      {
+        SHOW_PARM (engine_cmd_post_cmd, o->engine_cmd_post[i], "%s");
+        SHOW_PARM (engine_cmd_post_arg, o->engine_cmd_post[i+1], "%s");
+      }
+  }
   SHOW_STR (engine_pvk);
+  {
+    int i;
+    for (i=0;i<MAX_PARMS && o->engine_pvk_cmd_pre[i] != NULL;i+=2)
+      {
+        SHOW_PARM (engine_pvk_cmd_pre_cmd, o->engine_pvk_cmd_pre[i], "%s");
+        SHOW_PARM (engine_pvk_cmd_pre_arg, o->engine_pvk_cmd_pre[i+1], "%s");
+      }
+    for (i=0;i<MAX_PARMS && o->engine_pvk_cmd_post[i] != NULL;i+=2)
+      {
+        SHOW_PARM (engine_pvk_cmd_post_cmd, o->engine_pvk_cmd_post[i], "%s");
+        SHOW_PARM (engine_pvk_cmd_post_arg, o->engine_pvk_cmd_post[i+1], "%s");
+      }
+  }
 #endif /* ENABLE_CRYPTO_OPENSSL */
   SHOW_BOOL (replay);
   SHOW_BOOL (mute_replay_warnings);
@@ -6290,6 +6320,30 @@ add_option (struct options *options,
       VERIFY_PERMISSION (OPT_P_GENERAL);
       options->engine_pvk = p[1];
     }  
+  else if (!strncmp (p[0], "engine-", 7))
+    {
+      const char **target;
+      int j;
+
+      VERIFY_PERMISSION (OPT_P_GENERAL);
+
+      if (streq (p[0], "engine-cmd-pre"))
+        target = options->engine_cmd_pre;
+      else if (streq (p[0], "engine-cmd-post"))
+        target = options->engine_cmd_post;
+      else if (streq (p[0], "engine-pvk-cmd-pre"))
+        target = options->engine_pvk_cmd_pre;
+      else if (streq (p[0], "engine-pvk-cmd-post"))
+        target = options->engine_pvk_cmd_post;
+      else
+        {
+	  msg (msglevel, "invalid %s option", p[0]);
+	  goto err;
+	}
+
+      for (j = 1; j < MAX_PARMS && p[j] != NULL; j++)
+        target[j-1] = strcmp(p[j], "(null)") ? p[j] : NULL;
+    }
 #endif /* ENABLE_CRYPTO_OPENSSL */
 #ifdef HAVE_EVP_CIPHER_CTX_SET_KEY_LENGTH
   else if (streq (p[0], "keysize") && p[1])

@@ -117,27 +117,11 @@ static bool engine_initialized = false; /* GLOBAL */
 
 static ENGINE *engine_persist = NULL;   /* GLOBAL */
 
-/* Try to load an engine in a shareable library */
-static ENGINE *
-try_load_engine (const char *engine)
-{
-  ENGINE *e = ENGINE_by_id ("dynamic");
-  if (e)
-    {
-      if (!ENGINE_ctrl_cmd_string (e, "SO_PATH", engine, 0)
-	  || !ENGINE_ctrl_cmd_string (e, "LOAD", NULL, 0))
-	{
-	  ENGINE_free (e);
-	  e = NULL;
-	}
-    }
-  return e;
-}
-
-static ENGINE *
-setup_engine (const char *engine)
+ENGINE *
+openssl_engine_load (const char *engine, const char * const *cmd_pre, const char * const *cmd_post)
 {
   ENGINE *e = NULL;
+  int i;
 
   if (engine)
     {
@@ -147,11 +131,31 @@ setup_engine (const char *engine)
 	  ENGINE_register_all_complete ();
 	  return NULL;
 	}
-      if ((e = ENGINE_by_id (engine)) == NULL
-	 && (e = try_load_engine (engine)) == NULL)
+      if ((e = ENGINE_by_id (engine)) == NULL)
 	{
 	  msg (M_FATAL, "OpenSSL error: cannot load engine '%s'", engine);
 	}
+
+      i=0;
+      while(cmd_pre[i] != NULL)
+        {
+	  if (!ENGINE_ctrl_cmd_string(e, cmd_pre[i], cmd_pre[i+1], 0))
+            msg (M_SSLERR, "Cannot send engine '%s' pre command '%s' '%s", engine, cmd_pre[i], cmd_pre[i+1]);
+          i+=2;
+        }
+
+      if (!ENGINE_init(e))
+        msg (M_SSLERR, "Cannot initialize engine '%s'", engine);
+
+      ENGINE_free(e); /* free +1 reference count of the above two */
+
+      i=0;
+      while(cmd_post[i] != NULL)
+        {
+	  if (!ENGINE_ctrl_cmd_string(e, cmd_post[i], cmd_post[i+1], 0))
+            msg (M_SSLERR, "Cannot send engine '%s' post command '%s' '%s", engine, cmd_post[i], cmd_post[i+1]);
+          i+=2;
+        }
 
       if (!ENGINE_set_default (e, ENGINE_METHOD_ALL))
 	{
@@ -168,14 +172,15 @@ setup_engine (const char *engine)
 #endif /* HAVE_OPENSSL_ENGINE */
 
 void
-crypto_init_lib_engine (const char *engine_name)
+crypto_init_lib_options (const struct options *options)
 {
 #if HAVE_OPENSSL_ENGINE
-  if (!engine_initialized)
+  if (!engine_initialized && options->engine != NULL)
     {
-      ASSERT (engine_name);
+      ASSERT (options->engine);
       ASSERT (!engine_persist);
-      engine_persist = setup_engine (engine_name);
+      engine_persist = openssl_engine_load (options->engine,
+                           options->engine_cmd_pre, options->engine_cmd_post);
       engine_initialized = true;
     }
 #else

@@ -37,6 +37,7 @@
 #include "crypto_polarssl.h"
 #endif
 #include "basic.h"
+#include "options.h"
 
 
 /*
@@ -52,7 +53,7 @@ void crypto_clear_error (void);
 /*
  * Initialise the given named crypto engine.
  */
-void crypto_init_lib_engine (const char *engine_name);
+void crypto_init_lib_options (const struct options *options);
 
 #ifdef DMALLOC
 /*

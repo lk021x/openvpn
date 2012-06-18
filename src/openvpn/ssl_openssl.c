@@ -205,12 +205,10 @@ tls_ctx_set_options (struct tls_root_ctx *ctx, const struct options *options)
 #ifdef HAVE_OPENSSL_ENGINE
   if (options->engine_pvk != NULL)
     {
-      ctx->engine_pvk = ENGINE_by_id(options->engine_pvk);
+      ctx->engine_pvk = openssl_engine_load (options->engine_pvk,
+                    options->engine_pvk_cmd_pre, options->engine_pvk_cmd_post);
       if (ctx->engine_pvk == NULL)
 	msg(M_SSLERR, "Failed to load private key engine %s", options->engine_pvk);
-      if (!ENGINE_init(ctx->engine_pvk))
-	msg(M_SSLERR, "Failed to initialize private key engine %s", options->engine_pvk);
-      ENGINE_free(ctx->engine_pvk); /* free +1 reference count of the above two */
       ctx->ui_method = UI_create_method((char*)"OpenVPN");
       UI_method_set_reader(ctx->ui_method, openssl_ui_read);
     }

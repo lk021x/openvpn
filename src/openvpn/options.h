@@ -482,7 +482,11 @@ struct options
   const char *prng_hash;
   int prng_nonce_secret_len;
   const char *engine;
+  const char *engine_cmd_pre[MAX_PARMS+1];
+  const char *engine_cmd_post[MAX_PARMS+1];
   const char *engine_pvk;
+  const char *engine_pvk_cmd_pre[MAX_PARMS+1];
+  const char *engine_pvk_cmd_post[MAX_PARMS+1];
   bool replay;
   bool mute_replay_warnings;
   int replay_window;

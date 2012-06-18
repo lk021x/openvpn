@@ -234,7 +234,11 @@ crypto_uninit_lib (void)
 #if HAVE_OPENSSL_ENGINE
   if (engine_initialized)
     {
-      engine_persist = NULL;
+      if (engine_persist != NULL)
+        {
+          ENGINE_free(engine_persist);
+          engine_persist = NULL;
+        }
       engine_initialized = false;
     }
 

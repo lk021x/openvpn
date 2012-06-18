@@ -139,8 +139,6 @@ setup_engine (const char *engine)
 {
   ENGINE *e = NULL;
 
-  ENGINE_load_builtin_engines ();
-
   if (engine)
     {
       if (strcmp (engine, "auto") == 0)
@@ -201,6 +199,10 @@ crypto_init_lib (void)
   OpenSSL_add_all_algorithms ();
 #endif
 
+#ifdef HAVE_OPENSSL_ENGINE
+  ENGINE_load_builtin_engines ();
+#endif
+
   /*
    * If you build the OpenSSL library and OpenVPN with
    * CRYPTO_MDEBUG, you will get a listing of OpenSSL
@@ -232,10 +234,11 @@ crypto_uninit_lib (void)
 #if HAVE_OPENSSL_ENGINE
   if (engine_initialized)
     {
-      ENGINE_cleanup ();
       engine_persist = NULL;
       engine_initialized = false;
     }
+
+  ENGINE_cleanup ();
 #endif
 }
 

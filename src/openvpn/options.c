@@ -1560,7 +1560,7 @@ show_settings (const struct options *o)
   SHOW_INT (prng_nonce_secret_len);
   SHOW_INT (keysize);
 #ifndef ENABLE_CRYPTO_POLARSSL
-  SHOW_BOOL (engine);
+  SHOW_STR (engine);
 #endif /* ENABLE_CRYPTO_POLARSSL */
   SHOW_BOOL (replay);
   SHOW_BOOL (mute_replay_warnings);

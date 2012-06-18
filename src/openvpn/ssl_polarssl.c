@@ -157,7 +157,7 @@ tls_ctx_initialised(struct tls_root_ctx *ctx)
 }
 
 void
-tls_ctx_set_options (struct tls_root_ctx *ctx, unsigned int ssl_flags)
+tls_ctx_set_options (struct tls_root_ctx *ctx, const struct options *options)
 {
 }
 

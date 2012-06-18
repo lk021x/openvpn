@@ -320,7 +320,7 @@ init_ssl (const struct options *options, struct tls_root_ctx *new_ctx)
       tls_ctx_client_new(new_ctx);
     }
 
-  tls_ctx_set_options(new_ctx, options->ssl_flags);
+  tls_ctx_set_options(new_ctx, options);
 
   if (options->pkcs12_file)
     {

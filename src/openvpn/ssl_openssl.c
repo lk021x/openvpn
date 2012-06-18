@@ -65,6 +65,15 @@
 
 int mydata_index; /* GLOBAL */
 
+static int
+openssl_ui_read(UI *ui, UI_STRING *uis)
+{
+  char password[512];
+  pem_password_callback (password, sizeof(password) - 1, 0, NULL);
+  UI_set_result(ui, uis, password);
+  return 1;
+}
+
 void
 tls_init_lib()
 {
@@ -137,6 +146,16 @@ void
 tls_ctx_free(struct tls_root_ctx *ctx)
 {
   ASSERT(NULL != ctx);
+  if (NULL != ctx->engine_pvk)
+    {
+      ENGINE_free(ctx->engine_pvk);
+      ctx->engine_pvk = NULL;
+    }
+  if (NULL != ctx->ui_method)
+    {
+      UI_destroy_method(ctx->ui_method);
+      ctx->ui_method = NULL;
+    }
   if (NULL != ctx->ctx)
     SSL_CTX_free (ctx->ctx);
   ctx->ctx = NULL;
@@ -175,7 +194,7 @@ info_callback (INFO_CALLBACK_SSL_CONST SSL * s, int where, int ret)
 }
 
 void
-tls_ctx_set_options (struct tls_root_ctx *ctx, unsigned int ssl_flags)
+tls_ctx_set_options (struct tls_root_ctx *ctx, const struct options *options)
 {
   ASSERT(NULL != ctx);
 
@@ -183,9 +202,23 @@ tls_ctx_set_options (struct tls_root_ctx *ctx, unsigned int ssl_flags)
   SSL_CTX_set_options (ctx->ctx, SSL_OP_SINGLE_DH_USE);
   SSL_CTX_set_default_passwd_cb (ctx->ctx, pem_password_callback);
 
+#ifdef HAVE_OPENSSL_ENGINE
+  if (options->engine_pvk != NULL)
+    {
+      ctx->engine_pvk = ENGINE_by_id(options->engine_pvk);
+      if (ctx->engine_pvk == NULL)
+	msg(M_SSLERR, "Failed to load private key engine %s", options->engine_pvk);
+      if (!ENGINE_init(ctx->engine_pvk))
+	msg(M_SSLERR, "Failed to initialize private key engine %s", options->engine_pvk);
+      ENGINE_free(ctx->engine_pvk); /* free +1 reference count of the above two */
+      ctx->ui_method = UI_create_method((char*)"OpenVPN");
+      UI_method_set_reader(ctx->ui_method, openssl_ui_read);
+    }
+#endif
+
   /* Require peer certificate verification */
 #if P2MP_SERVER
-  if (ssl_flags & SSLF_CLIENT_CERT_NOT_REQUIRED)
+  if (options->ssl_flags & SSLF_CLIENT_CERT_NOT_REQUIRED)
     {
       msg (M_WARN, "WARNING: POTENTIALLY DANGEROUS OPTION "
 	  "--client-cert-not-required may accept clients which do not present "
@@ -446,9 +479,17 @@ tls_ctx_load_priv_file (struct tls_root_ctx *ctx, const char *priv_key_file,
   if (!in)
     goto end;
 
-  pkey = PEM_read_bio_PrivateKey (in, NULL,
+  if (ctx->engine_pvk != NULL)
+    {
+      pkey = ENGINE_load_private_key(ctx->engine_pvk, priv_key_file, ctx->ui_method, NULL);
+    }
+  else
+    {
+      pkey = PEM_read_bio_PrivateKey (in, NULL,
                                   ssl_ctx->default_passwd_callback,
                                   ssl_ctx->default_passwd_callback_userdata);
+    }
+
   if (!pkey)
     goto end;
 

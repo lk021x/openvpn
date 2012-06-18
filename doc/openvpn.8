@@ -3705,12 +3705,29 @@ instead for all of OpenVPN's pseudo-random number needs.
 .\"*********************************************************
 .TP
 .B \-\-engine [engine-name]
-Enable OpenSSL hardware-based crypto engine functionality.
+Enable OpenSSL hardware-based crypto engine functionality as default
+engine.
 
 If
 .B engine-name
 is specified,
-use a specific crypto engine.  Use the
+use a specific crypto engine for all cryptographic operations.  Use the
+.B \-\-show-engines
+standalone option to list the crypto engines which are
+supported by OpenSSL.
+.\"*********************************************************
+.TP
+.B \-\-engine-pvk engine-name
+Enable OpenSSL hardware-based crypto engine functionality for private key
+operations.
+
+If
+.B engine-name
+is specified,
+use a specific crypto engine for private key operations, the private key name
+is taken from the
+.B \-\-key
+option. Use the
 .B \-\-show-engines
 standalone option to list the crypto engines which are
 supported by OpenSSL.

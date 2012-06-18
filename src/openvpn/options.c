@@ -531,7 +531,10 @@ static const char usage_message[] =
   "                  If unspecified, defaults to cipher-specific default.\n"
 #endif
 #ifdef ENABLE_CRYPTO_OPENSSL
-  "--engine [name] : Enable OpenSSL hardware crypto engine functionality.\n"
+  "--engine [name]   : Enable OpenSSL hardware crypto engine functionality\n"
+  "                    as default.\n"
+  "--engine-pvk name : Enable OpenSSL hardware crypto engine functionality\n"
+  "                    for private key operations.\n"
 #endif
   "--no-replay     : Disable replay protection.\n"
   "--mute-replay-warnings : Silence the output of replay warnings to log file.\n"
@@ -1561,6 +1564,7 @@ show_settings (const struct options *o)
   SHOW_INT (keysize);
 #ifdef ENABLE_CRYPTO_OPENSSL
   SHOW_STR (engine);
+  SHOW_STR (engine_pvk);
 #endif /* ENABLE_CRYPTO_OPENSSL */
   SHOW_BOOL (replay);
   SHOW_BOOL (mute_replay_warnings);
@@ -6280,6 +6284,11 @@ add_option (struct options *options,
 	}
       else
 	options->engine = "auto";
+    }  
+  else if (streq (p[0], "engine-pvk") && p[1])
+    {
+      VERIFY_PERMISSION (OPT_P_GENERAL);
+      options->engine_pvk = p[1];
     }  
 #endif /* ENABLE_CRYPTO_OPENSSL */
 #ifdef HAVE_EVP_CIPHER_CTX_SET_KEY_LENGTH

@@ -32,6 +32,7 @@
 #define SSL_BACKEND_H_
 
 #include "buffer.h"
+#include "options.h"
 
 #ifdef ENABLE_CRYPTO_OPENSSL
 #include "ssl_openssl.h"
@@ -117,9 +118,9 @@ bool tls_ctx_initialised(struct tls_root_ctx *ctx);
  * and session verification parameters.
  *
  * @param ctx		TLS context to set options on
- * @param ssl_flags	SSL flags to set
+ * @param options	OpenVPN options.
  */
-void tls_ctx_set_options (struct tls_root_ctx *ctx, unsigned int ssl_flags);
+void tls_ctx_set_options (struct tls_root_ctx *ctx, const struct options *options);
 
 /**
  * Restrict the list of ciphers that can be used within the TLS context.

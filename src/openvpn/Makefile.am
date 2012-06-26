@@ -23,6 +23,7 @@ INCLUDES = \
 	-I$(top_srcdir)/src/compat
 
 AM_CFLAGS = \
+	-DOPENVPN_PLUGINDIR="\"$(plugindir)\"" \
 	$(TAP_CFLAGS) \
 	$(OPTIONAL_CRYPTO_CFLAGS) \
 	$(OPTIONAL_LZO_CFLAGS) \

@@ -3376,6 +3376,9 @@ usage_version (void)
   msg (M_INFO|M_NOPREFIX, "git revision: %s", CONFIGURE_GIT_REVISION);
 #endif
 #endif
+#ifdef OPENVPN_PLUGINDIR
+  msg (M_INFO|M_NOPREFIX, "build plugindir: %s", OPENVPN_PLUGINDIR);
+#endif
   openvpn_exit (OPENVPN_EXIT_STATUS_USAGE); /* exit point */
 }
 

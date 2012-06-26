@@ -196,46 +196,88 @@ static void
 plugin_init_item (struct plugin *p, const struct plugin_option *o)
 {
   struct gc_arena gc = gc_new ();
-  bool rel = false;
 
   p->so_pathname = o->so_pathname;
   p->plugin_type_mask = plugin_supported_types ();
 
 #ifndef WIN32
+  {
+    char _abs_so_pathname[PATH_MAX];
+    const char *abs_so_pathname;
 
-  p->handle = NULL;
-#if defined(PLUGIN_LIBDIR)
-  if (!absolute_pathname (p->so_pathname))
-    {
-      char full[PATH_MAX];
+    if (absolute_pathname (p->so_pathname))
+      abs_so_pathname = p->so_pathname;
+    else
+      {
+      	openvpn_snprintf(_abs_so_pathname, SIZE(_abs_so_pathname), "%s%c%s", OPENVPN_PLUGINDIR, OS_SPECIFIC_DIRSEP, p->so_pathname);
+        abs_so_pathname = _abs_so_pathname;
+      }
 
-      openvpn_snprintf (full, sizeof(full), "%s/%s", PLUGIN_LIBDIR, p->so_pathname);
-      p->handle = dlopen (full, RTLD_NOW);
-#if defined(ENABLE_PLUGIN_SEARCH)
-      if (!p->handle)
-	{
-	  rel = true;
-	  p->handle = dlopen (p->so_pathname, RTLD_NOW);
-	}
-#endif
-    }
-  else
-#endif
-    {
-      rel = !absolute_pathname (p->so_pathname);
-      p->handle = dlopen (p->so_pathname, RTLD_NOW);
-    }
-  if (!p->handle)
-    msg (M_ERR, "PLUGIN_INIT: could not load plugin shared object %s: %s", p->so_pathname, dlerror());
+    p->handle = dlopen (abs_so_pathname, RTLD_NOW);
+    if (!p->handle)
+      msg (M_ERR, "PLUGIN_INIT: could not load plugin shared object '%s': %s", abs_so_pathname, dlerror());
 
 # define PLUGIN_SYM(var, name, flags) libdl_resolve_symbol (p->handle, (void*)&p->var, name, p->so_pathname, flags)
 
+  }
 #else
+  {
+    WCHAR _abs_so_pathname[PATH_MAX];
+    WCHAR *abs_so_pathname;
 
-  rel = !absolute_pathname (p->so_pathname);
-  p->module = LoadLibraryW (wide_string (p->so_pathname, &gc));
-  if (!p->module)
-    msg (M_ERR, "PLUGIN_INIT: could not load plugin DLL: %s", p->so_pathname);
+    if (absolute_pathname (p->so_pathname))
+      abs_so_pathname = wide_string(p->so_pathname, &gc);
+    else
+      {
+         WCHAR _plugindir[PATH_MAX];
+         WCHAR _plugindir_expanded[PATH_MAX];
+         WCHAR *plugindir = NULL;
+         HKEY key;
+
+         if (RegOpenKeyExW(
+             HKEY_LOCAL_MACHINE,
+             L"SOFTWARE\\OpenVPN",
+             0,
+             KEY_READ,
+             &key
+           ) == ERROR_SUCCESS)
+           {
+             DWORD len = sizeof (_plugindir);
+             DWORD data_type;
+
+             if (RegQueryValueExW(
+                 key,
+                 L"plugindir",
+                 NULL,
+                 &data_type,
+                 (PBYTE)_plugindir,
+                 &len) == ERROR_SUCCESS &&
+                 data_type == REG_SZ)
+               {
+                 plugindir = _plugindir;
+               }
+           }
+
+         if (plugindir == NULL)
+           plugindir = wide_string (OPENVPN_PLUGINDIR, &gc);
+
+         if (ExpandEnvironmentStringsW(plugindir, _plugindir_expanded, SIZE(_plugindir_expanded)) != 0)
+	   plugindir = _plugindir_expanded;
+
+	 if (
+	   _snwprintf(_abs_so_pathname, SIZE(_abs_so_pathname), L"%s%C%s", plugindir, OS_SPECIFIC_DIRSEP, wide_string(p->so_pathname, &gc)) == SIZE(_abs_so_pathname) &&
+	   _abs_so_pathname[SIZE(_abs_so_pathname)-1] != L'\0')
+	   {
+             msg (M_ERR, "PLUGIN_INIT: plugin name too long: '%s'", p->so_pathname);
+	   }
+	 abs_so_pathname = _abs_so_pathname;
+      }
+
+    p->module = LoadLibraryW (abs_so_pathname);
+
+    if (!p->module)
+      msg (M_ERR, "PLUGIN_INIT: could not load plugin DLL: '%S'", abs_so_pathname);
+  }
 
 # define PLUGIN_SYM(var, name, flags) dll_resolve_symbol (p->module, (void*)&p->var, name, p->so_pathname, flags)
 
@@ -277,9 +319,6 @@ plugin_init_item (struct plugin *p, const struct plugin_option *o)
     p->requested_initialization_point = (*p->initialization_point)();
   else
     p->requested_initialization_point = OPENVPN_PLUGIN_INIT_PRE_DAEMON;
-
-  if (rel)
-    msg (M_WARN, "WARNING: plugin '%s' specified by a relative pathname -- using an absolute pathname would be more secure", p->so_pathname);
 
   p->initialized = true;
 
